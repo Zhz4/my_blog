@@ -1,5 +1,6 @@
 ---
 import { SITE_TITLE, NAV_LINKS } from "../consts";
+import SearchModal from "./SearchModal.astro";
 
 // 取当前路径，用来高亮当前导航项
 const pathname = Astro.url.pathname.replace(/\/$/, "") || "/";
@@ -48,6 +49,8 @@ const isActive = (href: string) =>
           </a>
         ))
       }
+
+      <SearchModal />
 
       <button
         id="theme-toggle"
