@@ -4,7 +4,6 @@ import BaseLayout from './BaseLayout.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import TableOfContents from '../components/TableOfContents.astro';
 import Comments from '../components/Comments.astro';
-import CoverImage from '../components/CoverImage.astro';
 
 interface Props {
 	title: string;
@@ -14,7 +13,6 @@ interface Props {
 	tags?: string[];
 	headings: MarkdownHeading[];
 	readingTime: number;
-	slug: string;
 	heroImage?: ImageMetadata;
 }
 
@@ -26,7 +24,6 @@ const {
 	tags = [],
 	headings,
 	readingTime,
-	slug,
 	heroImage,
 } = Astro.props;
 ---
@@ -34,17 +31,6 @@ const {
 <BaseLayout title={title} description={description} image={heroImage?.src} wide>
 	<div class="flex justify-center gap-10 xl:gap-14">
 		<article class="w-full max-w-2xl min-w-0" data-pagefind-body>
-			<div class="mb-8 aspect-2/1 overflow-hidden rounded-2xl">
-				<CoverImage
-					image={heroImage}
-					alt={title}
-					seed={slug}
-					loading="eager"
-					sizes="(min-width: 1280px) 672px, 100vw"
-					class="h-full w-full object-cover"
-				/>
-			</div>
-
 			<header class="mb-10">
 				<a
 					href="/blog"
