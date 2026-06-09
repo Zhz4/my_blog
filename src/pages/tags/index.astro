@@ -1,0 +1,44 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+
+// 统计每个标签出现的次数
+const counts = new Map<string, number>();
+for (const post of posts) {
+	for (const tag of post.data.tags) {
+		counts.set(tag, (counts.get(tag) ?? 0) + 1);
+	}
+}
+const tags = [...counts.entries()].sort(
+	(a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
+);
+---
+
+<BaseLayout title="标签" description="按标签浏览全部文章">
+	<header class="mb-8">
+		<h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">标签</h1>
+		<p class="mt-2 text-gray-600 dark:text-gray-300">共 {tags.length} 个标签，点击查看相关文章。</p>
+	</header>
+
+	{
+		tags.length === 0 ? (
+			<p class="text-gray-500 dark:text-gray-400">还没有标签。</p>
+		) : (
+			<div class="flex flex-wrap gap-3">
+				{tags.map(([tag, count]) => (
+					<a
+						href={`/tags/${tag}/`}
+						class="group inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:-translate-y-0.5 hover:border-purple-300 hover:text-purple-600 hover:shadow-sm dark:border-gray-800 dark:bg-gray-900/40 dark:text-gray-200 dark:hover:border-purple-700 dark:hover:text-purple-400"
+					>
+						<span>#{tag}</span>
+						<span class="grid h-5 min-w-5 place-items-center rounded-full bg-gray-100 px-1.5 text-xs text-gray-500 transition-colors group-hover:bg-purple-100 group-hover:text-purple-700 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-purple-900/60 dark:group-hover:text-purple-300">
+							{count}
+						</span>
+					</a>
+				))}
+			</div>
+		)
+	}
+</BaseLayout>

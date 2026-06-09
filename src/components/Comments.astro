@@ -1,0 +1,60 @@
+---
+import { GISCUS } from '../consts';
+
+// 只有当三项关键配置都填好后才真正加载 giscus
+const configured = Boolean(GISCUS.repo && GISCUS.repoId && GISCUS.categoryId);
+---
+
+<section class="mt-14 border-t border-gray-200 pt-10 dark:border-gray-800">
+	<h2 class="mb-6 text-lg font-semibold text-gray-900 dark:text-gray-100">评论</h2>
+
+	{
+		configured ? (
+			<div class="giscus-wrapper">
+				<div class="giscus" />
+			</div>
+		) : (
+			<div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-900/50 dark:text-gray-400">
+				<p class="mb-2 font-medium text-gray-800 dark:text-gray-200">💬 评论系统尚未配置</p>
+				<p>
+					在 <code class="rounded bg-gray-200 px-1.5 py-0.5 text-xs dark:bg-gray-800">src/consts.ts</code>{' '}
+					里填好 Giscus 的 <code class="rounded bg-gray-200 px-1.5 py-0.5 text-xs dark:bg-gray-800">repo / repoId / categoryId</code>{' '}
+					后，这里会自动显示基于 GitHub Discussions 的评论区。配置向导见{' '}
+					<a
+						href="https://giscus.app"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="font-medium text-purple-600 underline dark:text-purple-400"
+					>
+						giscus.app
+					</a>
+					。
+				</p>
+			</div>
+		)
+	}
+</section>
+
+{
+	configured && (
+		<script is:inline define:vars={{ GISCUS }}>
+			const theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+			const s = document.createElement('script');
+			s.src = 'https://giscus.app/client.js';
+			s.setAttribute('data-repo', GISCUS.repo);
+			s.setAttribute('data-repo-id', GISCUS.repoId);
+			s.setAttribute('data-category', GISCUS.category);
+			s.setAttribute('data-category-id', GISCUS.categoryId);
+			s.setAttribute('data-mapping', GISCUS.mapping);
+			s.setAttribute('data-strict', '0');
+			s.setAttribute('data-reactions-enabled', GISCUS.reactionsEnabled);
+			s.setAttribute('data-emit-metadata', '0');
+			s.setAttribute('data-input-position', 'top');
+			s.setAttribute('data-theme', theme);
+			s.setAttribute('data-lang', GISCUS.lang);
+			s.crossOrigin = 'anonymous';
+			s.async = true;
+			document.querySelector('.giscus-wrapper .giscus')?.appendChild(s);
+		</script>
+	)
+}

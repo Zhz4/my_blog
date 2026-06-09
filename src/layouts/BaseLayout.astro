@@ -1,0 +1,59 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+
+interface Props {
+	title?: string;
+	description?: string;
+	image?: string;
+	/** 文章页用更宽的容器，给目录侧边栏留位置 */
+	wide?: boolean;
+}
+
+const {
+	title = SITE_TITLE,
+	description = SITE_DESCRIPTION,
+	image,
+	wide = false,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead title={title} description={description} image={image} />
+	</head>
+	<body
+		class="min-h-screen bg-white font-sans text-gray-900 antialiased selection:text-purple-900 dark:bg-gray-950 dark:text-gray-100"
+	>
+		<Header />
+		<main class:list={['mx-auto px-4 py-10 sm:px-6', wide ? 'max-w-6xl' : 'max-w-3xl']}>
+			<slot />
+		</main>
+		<Footer />
+
+		<!-- 滚动入场动画：元素进入视口时加 .in-view -->
+		<script>
+			const reveals = document.querySelectorAll('.reveal');
+			const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			if (reduce || !('IntersectionObserver' in window)) {
+				reveals.forEach((el) => el.classList.add('in-view'));
+			} else {
+				const io = new IntersectionObserver(
+					(entries) => {
+						entries.forEach((entry) => {
+							if (entry.isIntersecting) {
+								entry.target.classList.add('in-view');
+								io.unobserve(entry.target);
+							}
+						});
+					},
+					{ rootMargin: '0px 0px -10% 0px', threshold: 0.05 }
+				);
+				reveals.forEach((el) => io.observe(el));
+			}
+		</script>
+	</body>
+</html>

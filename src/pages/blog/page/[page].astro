@@ -1,0 +1,41 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostList from '../../../components/PostList.astro';
+import Pagination from '../../../components/Pagination.astro';
+import { POSTS_PER_PAGE } from '../../../consts';
+
+// 仅生成第 2 页及以后（第 1 页是 /blog）
+export const getStaticPaths = (async () => {
+	const all = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+		(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+	);
+	const totalPages = Math.max(1, Math.ceil(all.length / POSTS_PER_PAGE));
+
+	const paths = [];
+	for (let p = 2; p <= totalPages; p++) {
+		paths.push({
+			params: { page: String(p) },
+			props: {
+				posts: all.slice((p - 1) * POSTS_PER_PAGE, p * POSTS_PER_PAGE),
+				currentPage: p,
+				totalPages,
+			},
+		});
+	}
+	return paths;
+}) satisfies GetStaticPaths;
+
+const { posts, currentPage, totalPages } = Astro.props;
+---
+
+<BaseLayout title={`博客 · 第 ${currentPage} 页`} description="全部文章列表">
+	<header class="mb-8">
+		<h1 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-100">博客</h1>
+		<p class="mt-2 text-gray-600 dark:text-gray-300">第 {currentPage} / {totalPages} 页。</p>
+	</header>
+
+	<PostList posts={posts} />
+	<Pagination currentPage={currentPage} totalPages={totalPages} />
+</BaseLayout>

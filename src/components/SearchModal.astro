@@ -1,0 +1,193 @@
+---
+// 全站搜索：Cmd/Ctrl+K 唤起，基于 Pagefind JS API。
+// Pagefind 在 build 后生成索引（dist/pagefind/），dev 下由 astro-pagefind 提供上次构建的缓存索引。
+// 这里渲染「打开按钮 + 原生 <dialog> 弹窗」，<dialog> 自带焦点陷阱与 Esc 关闭。
+---
+
+<button
+	id="search-open"
+	type="button"
+	aria-label="搜索（Ctrl/⌘ K）"
+	class="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-100"
+>
+	<svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+		<path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+	</svg>
+	<span class="hidden sm:inline">搜索</span>
+	<kbd
+		class="hidden items-center rounded border border-gray-300 px-1.5 font-sans text-[11px] text-gray-400 sm:inline-flex dark:border-gray-700"
+	>
+		⌘K
+	</kbd>
+</button>
+
+<dialog
+	id="search-modal"
+	aria-label="站内搜索"
+	class="w-[92vw] max-w-xl rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-gray-900/50 backdrop:backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900"
+>
+	<div class="flex items-center gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-800">
+		<svg class="h-5 w-5 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+		</svg>
+		<input
+			id="search-input"
+			type="search"
+			autocomplete="off"
+			placeholder="搜索文章…"
+			class="w-full bg-transparent text-base text-gray-900 placeholder-gray-400 focus:outline-none dark:text-gray-100"
+			aria-label="搜索关键词"
+		/>
+		<kbd class="rounded border border-gray-300 px-1.5 py-0.5 text-[11px] text-gray-400 dark:border-gray-700">Esc</kbd>
+	</div>
+
+	<div id="search-results" class="max-h-[60vh] overflow-y-auto p-2">
+		<p class="px-3 py-10 text-center text-sm text-gray-500 dark:text-gray-400">输入关键词开始搜索</p>
+	</div>
+</dialog>
+
+<style>
+	#search-modal {
+		margin-top: 10vh;
+		margin-inline: auto;
+	}
+	#search-results :global(mark) {
+		background-color: transparent;
+		color: var(--color-purple-600);
+		font-weight: 600;
+	}
+	:global(.dark) #search-results :global(mark) {
+		color: var(--color-purple-400);
+	}
+	.search-result[data-active] {
+		background-color: var(--color-gray-100);
+	}
+	:global(.dark) .search-result[data-active] {
+		background-color: color-mix(in oklab, var(--color-gray-800) 70%, transparent);
+	}
+</style>
+
+<script>
+	const openBtn = document.getElementById('search-open');
+	const modal = document.getElementById('search-modal') as HTMLDialogElement | null;
+	const input = document.getElementById('search-input') as HTMLInputElement | null;
+	const resultsEl = document.getElementById('search-results');
+
+	if (modal && input && resultsEl) {
+		let pagefind: any = null;
+		let loadFailed = false;
+		let activeIndex = -1;
+		let links: HTMLAnchorElement[] = [];
+		let debounceTimer: ReturnType<typeof setTimeout>;
+
+		const escapeHtml = (s: string) =>
+			s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
+
+		function message(html: string) {
+			resultsEl!.innerHTML = `<p class="px-3 py-10 text-center text-sm text-gray-500 dark:text-gray-400">${html}</p>`;
+			links = [];
+			activeIndex = -1;
+		}
+
+		async function loadPagefind() {
+			if (pagefind || loadFailed) return pagefind;
+			try {
+				// 用变量 + @vite-ignore，避免 Vite 在构建期解析这个「构建后才存在」的文件
+				const path = '/pagefind/pagefind.js';
+				pagefind = await import(/* @vite-ignore */ path);
+				if (pagefind.init) await pagefind.init();
+			} catch {
+				loadFailed = true;
+				message('搜索索引尚未生成。请先运行 <code>bun run build</code>（dev 下需要先构建一次）。');
+			}
+			return pagefind;
+		}
+
+		function open() {
+			if (!modal!.open) modal!.showModal();
+			document.documentElement.style.overflow = 'hidden';
+			loadPagefind();
+			requestAnimationFrame(() => input!.focus());
+		}
+		function close() {
+			if (modal!.open) modal!.close();
+		}
+
+		openBtn?.addEventListener('click', open);
+		modal.addEventListener('close', () => {
+			document.documentElement.style.overflow = '';
+		});
+		// 点击 backdrop（即 dialog 元素本身的空白区域）关闭
+		modal.addEventListener('click', (e) => {
+			if (e.target === modal) close();
+		});
+
+		document.addEventListener('keydown', (e) => {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+				e.preventDefault();
+				modal!.open ? close() : open();
+			}
+		});
+
+		function setActive(i: number) {
+			links.forEach((a) => a.removeAttribute('data-active'));
+			activeIndex = i;
+			const el = links[i];
+			if (el) {
+				el.setAttribute('data-active', '');
+				el.scrollIntoView({ block: 'nearest' });
+			}
+		}
+
+		input.addEventListener('input', () => {
+			const q = input!.value.trim();
+			clearTimeout(debounceTimer);
+			if (!q) {
+				message('输入关键词开始搜索');
+				return;
+			}
+			debounceTimer = setTimeout(() => runSearch(q), 180);
+		});
+
+		input.addEventListener('keydown', (e) => {
+			if (!links.length) return;
+			if (e.key === 'ArrowDown') {
+				e.preventDefault();
+				setActive((activeIndex + 1) % links.length);
+			} else if (e.key === 'ArrowUp') {
+				e.preventDefault();
+				setActive((activeIndex - 1 + links.length) % links.length);
+			} else if (e.key === 'Enter' && links[activeIndex]) {
+				e.preventDefault();
+				window.location.href = links[activeIndex].href;
+			}
+		});
+
+		async function runSearch(q: string) {
+			const pf = await loadPagefind();
+			if (!pf) return;
+			const search = await pf.search(q);
+			if (input!.value.trim() !== q) return; // 输入已变化，丢弃过期结果
+			const data = await Promise.all(search.results.slice(0, 8).map((r: any) => r.data()));
+			if (!data.length) {
+				message(`没有找到与「${escapeHtml(q)}」相关的内容`);
+				return;
+			}
+			resultsEl!.innerHTML = '';
+			links = [];
+			data.forEach((d: any, i: number) => {
+				const a = document.createElement('a');
+				a.href = d.url;
+				a.className =
+					'search-result block rounded-lg px-3 py-2.5 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800';
+				a.innerHTML =
+					`<div class="font-medium text-gray-900 dark:text-gray-100">${escapeHtml(d.meta?.title || d.url)}</div>` +
+					`<div class="mt-0.5 line-clamp-2 text-sm text-gray-500 dark:text-gray-400">${d.excerpt}</div>`;
+				a.addEventListener('mouseenter', () => setActive(i));
+				resultsEl!.appendChild(a);
+				links.push(a);
+			});
+			setActive(0);
+		}
+	}
+</script>

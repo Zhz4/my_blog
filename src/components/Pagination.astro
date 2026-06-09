@@ -1,0 +1,52 @@
+---
+interface Props {
+	currentPage: number;
+	totalPages: number;
+}
+
+const { currentPage, totalPages } = Astro.props;
+
+// 第 1 页在 /blog，其余在 /blog/page/N
+const pageUrl = (n: number) => (n <= 1 ? '/blog' : `/blog/page/${n}`);
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
+const baseBtn =
+	'inline-flex h-9 min-w-9 items-center justify-center rounded-lg px-3 text-sm font-medium transition-colors';
+const inactive =
+	'border border-gray-200 text-gray-600 hover:border-purple-300 hover:text-purple-600 dark:border-gray-800 dark:text-gray-400 dark:hover:border-purple-700 dark:hover:text-purple-400';
+const disabled = 'cursor-not-allowed border border-gray-100 text-gray-300 dark:border-gray-900 dark:text-gray-700';
+---
+
+{
+	totalPages > 1 && (
+		<nav class="mt-12 flex items-center justify-center gap-1.5" aria-label="分页">
+			{currentPage > 1 ? (
+				<a href={pageUrl(currentPage - 1)} class={`${baseBtn} ${inactive}`} rel="prev">
+					← 上一页
+				</a>
+			) : (
+				<span class={`${baseBtn} ${disabled}`}>← 上一页</span>
+			)}
+
+			{pages.map((n) =>
+				n === currentPage ? (
+					<span class={`${baseBtn} bg-purple-600 text-white`} aria-current="page">
+						{n}
+					</span>
+				) : (
+					<a href={pageUrl(n)} class={`${baseBtn} ${inactive}`}>
+						{n}
+					</a>
+				)
+			)}
+
+			{currentPage < totalPages ? (
+				<a href={pageUrl(currentPage + 1)} class={`${baseBtn} ${inactive}`} rel="next">
+					下一页 →
+				</a>
+			) : (
+				<span class={`${baseBtn} ${disabled}`}>下一页 →</span>
+			)}
+		</nav>
+	)
+}

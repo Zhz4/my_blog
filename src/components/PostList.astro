@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import PostCard from './PostCard.astro';
+
+interface Props {
+	posts: CollectionEntry<'blog'>[];
+}
+
+const { posts } = Astro.props;
+---
+
+{
+	posts.length === 0 ? (
+		<p class="rounded-xl border border-dashed border-gray-300 p-8 text-center text-gray-500 dark:border-gray-700 dark:text-gray-400">
+			还没有文章。去 <code class="text-sm">src/content/blog</code> 写第一篇吧！
+		</p>
+	) : (
+		<div class="grid gap-5">
+			{posts.map((post, i) => (
+				<div class="reveal" style={`transition-delay:${Math.min(i, 6) * 60}ms`}>
+					<PostCard
+						slug={post.id}
+						title={post.data.title}
+						description={post.data.description}
+						pubDate={post.data.pubDate}
+						tags={post.data.tags}
+						heroImage={post.data.heroImage}
+					/>
+				</div>
+			))}
+		</div>
+	)
+}

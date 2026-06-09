@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render } from 'astro:content';
+import BlogPost from '../../layouts/BlogPost.astro';
+
+// 为每篇文章生成一个静态页面。
+// 用单段参数 [slug]（而非 [...slug]），这样 /blog/page/2 等分页路由不会和它冲突。
+export const getStaticPaths = (async () => {
+	const posts = await getCollection('blog', ({ data }) => !data.draft);
+	return posts.map((post) => ({
+		params: { slug: post.id },
+		props: { post },
+	}));
+}) satisfies GetStaticPaths;
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+
+// 估算阅读时间：中文按字符（约 350 字/分钟），英文按单词（约 200 词/分钟）
+const body = post.body ?? '';
+const cjkCount = (body.match(/[一-龥]/g) ?? []).length;
+const wordCount = (body.match(/[A-Za-z0-9]+/g) ?? []).length;
+const readingTime = Math.max(1, Math.round(cjkCount / 350 + wordCount / 200));
+---
+
+<BlogPost
+	title={post.data.title}
+	description={post.data.description}
+	pubDate={post.data.pubDate}
+	updatedDate={post.data.updatedDate}
+	tags={post.data.tags}
+	headings={headings}
+	readingTime={readingTime}
+>
+	<Content />
+</BlogPost>

@@ -1,0 +1,68 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* 暗色模式跟随 <html> 上的 .dark 类（由 BaseHead 的内联脚本设置） */
+@variant dark (&:where(.dark, .dark *));
+
+/* 设计令牌 */
+@theme {
+	--font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system,
+		'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB',
+		sans-serif;
+}
+
+:root {
+	color-scheme: light dark;
+	--brand: var(--color-purple-600);
+}
+
+html {
+	scroll-behavior: smooth;
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+	text-rendering: optimizeLegibility;
+}
+
+/* 选中文本配色 */
+::selection {
+	background-color: color-mix(in oklab, var(--color-purple-500) 28%, transparent);
+}
+
+/* ---------- 代码块：跟随明暗主题（Shiki 双主题） ---------- */
+.dark .astro-code,
+.dark .astro-code span {
+	color: var(--shiki-dark) !important;
+	background-color: var(--shiki-dark-bg) !important;
+	font-style: var(--shiki-dark-font-style) !important;
+	font-weight: var(--shiki-dark-font-weight) !important;
+	text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+/* ---------- 滚动入场动画 ---------- */
+/* 只在「JS 已启用」(html.js) 时隐藏，保证关闭 JS 时内容依然可见、可被搜索引擎抓取 */
+@media (prefers-reduced-motion: no-preference) {
+	html.js .reveal {
+		opacity: 0;
+		transform: translateY(14px);
+		transition:
+			opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+			transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	html.js .reveal.in-view {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* ---------- 装饰性渐变背景（首页 hero 用） ---------- */
+.hero-glow {
+	background-image:
+		radial-gradient(40rem 24rem at 50% -8rem, color-mix(in oklab, var(--color-purple-500) 22%, transparent), transparent 70%);
+}
+.dark .hero-glow {
+	background-image:
+		radial-gradient(40rem 24rem at 50% -8rem, color-mix(in oklab, var(--color-purple-500) 26%, transparent), transparent 70%);
+}
