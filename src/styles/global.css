@@ -26,9 +26,9 @@ body {
 	text-rendering: optimizeLegibility;
 }
 
-/* 选中文本配色 */
+/* 选中文本配色（克制的点缀色） */
 ::selection {
-	background-color: color-mix(in oklab, var(--color-purple-500) 28%, transparent);
+	background-color: color-mix(in oklab, var(--color-purple-500) 18%, transparent);
 }
 
 /* ---------- 代码块：跟随明暗主题（Shiki 双主题） ---------- */
@@ -57,12 +57,4 @@ body {
 	}
 }
 
-/* ---------- 装饰性渐变背景（首页 hero 用） ---------- */
-.hero-glow {
-	background-image:
-		radial-gradient(40rem 24rem at 50% -8rem, color-mix(in oklab, var(--color-purple-500) 22%, transparent), transparent 70%);
-}
-.dark .hero-glow {
-	background-image:
-		radial-gradient(40rem 24rem at 50% -8rem, color-mix(in oklab, var(--color-purple-500) 26%, transparent), transparent 70%);
-}
+/* hero 光晕已移除：极简留白风格不需要装饰性背景 */

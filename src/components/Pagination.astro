@@ -13,7 +13,7 @@ const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 const baseBtn =
 	'inline-flex h-9 min-w-9 items-center justify-center rounded-lg px-3 text-sm font-medium transition-colors';
 const inactive =
-	'border border-gray-200 text-gray-600 hover:border-purple-300 hover:text-purple-600 dark:border-gray-800 dark:text-gray-400 dark:hover:border-purple-700 dark:hover:text-purple-400';
+	'border border-gray-200 text-gray-600 hover:border-gray-300 hover:text-purple-600 dark:border-gray-800 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:text-purple-400';
 const disabled = 'cursor-not-allowed border border-gray-100 text-gray-300 dark:border-gray-900 dark:text-gray-700';
 ---
 
@@ -30,7 +30,7 @@ const disabled = 'cursor-not-allowed border border-gray-100 text-gray-300 dark:b
 
 			{pages.map((n) =>
 				n === currentPage ? (
-					<span class={`${baseBtn} bg-purple-600 text-white`} aria-current="page">
+					<span class={`${baseBtn} bg-gray-900 text-white dark:bg-white dark:text-gray-900`} aria-current="page">
 						{n}
 					</span>
 				) : (

@@ -12,50 +12,44 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
 
 <BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
 	<!-- Hero -->
-	<section class="relative isolate py-12 text-center sm:py-20">
-		<div class="hero-glow pointer-events-none absolute inset-x-0 -top-24 -z-10 h-80"></div>
-
-		<span
-			class="mb-5 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/60 px-3 py-1 text-sm text-gray-600 backdrop-blur dark:border-gray-800 dark:bg-gray-900/60 dark:text-gray-300"
-		>
-			<span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+	<section class="py-8 sm:py-12">
+		<p class="flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500">
+			<span class="inline-block h-1.5 w-1.5 rounded-full bg-purple-500"></span>
 			用 Astro + Tailwind 构建
-		</span>
+		</p>
 
-		<h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-6xl dark:text-gray-100">
-			欢迎来到<br class="sm:hidden" />
-			<span class="bg-linear-to-r from-purple-600 to-fuchsia-500 bg-clip-text text-transparent">
-				我的博客
-			</span>
+		<h1 class="mt-5 text-4xl font-semibold tracking-tight sm:text-5xl">
+			<span class="text-gray-400 dark:text-gray-500">欢迎来到</span>
+			<span class="text-gray-900 dark:text-gray-100">我的博客</span>
 		</h1>
 
-		<p class="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+		<p class="mt-5 max-w-xl text-lg leading-relaxed text-gray-500 dark:text-gray-400">
 			{SITE_DESCRIPTION}
 		</p>
 
-		<div class="mt-8 flex items-center justify-center gap-3">
+		<div class="mt-8 flex items-center gap-6">
 			<a
 				href="/blog"
-				class="rounded-lg bg-purple-600 px-5 py-2.5 font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-purple-700 hover:shadow-md focus:ring-2 focus:ring-purple-400 focus:outline-none"
+				class="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
 			>
 				浏览全部文章
 			</a>
 			<a
 				href="/about"
-				class="rounded-lg border border-gray-300 px-5 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-900"
+				class="text-sm font-medium text-gray-500 transition-colors hover:text-purple-600 dark:text-gray-400 dark:hover:text-purple-400"
 			>
-				关于我
+				关于我 →
 			</a>
 		</div>
 	</section>
 
 	<!-- 最新文章 -->
-	<section class="mt-4">
-		<div class="mb-6 flex items-baseline justify-between">
-			<h2 class="text-2xl font-bold text-gray-900 dark:text-gray-100">最新文章</h2>
+	<section class="mt-10 sm:mt-14">
+		<div class="mb-1 flex items-baseline justify-between">
+			<h2 class="text-base font-semibold text-gray-900 dark:text-gray-100">最新文章</h2>
 			<a
 				href="/blog"
-				class="text-sm font-medium text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300"
+				class="text-sm text-gray-400 transition-colors hover:text-purple-600 dark:text-gray-500 dark:hover:text-purple-400"
 			>
 				全部 →
 			</a>

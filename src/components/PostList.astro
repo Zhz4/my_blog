@@ -11,11 +11,11 @@ const { posts } = Astro.props;
 
 {
 	posts.length === 0 ? (
-		<p class="rounded-xl border border-dashed border-gray-300 p-8 text-center text-gray-500 dark:border-gray-700 dark:text-gray-400">
+		<p class="border-y border-dashed border-gray-200 py-12 text-center text-sm text-gray-500 dark:border-gray-800 dark:text-gray-400">
 			还没有文章。去 <code class="text-sm">src/content/blog</code> 写第一篇吧！
 		</p>
 	) : (
-		<div class="grid gap-5">
+		<div class="divide-y divide-gray-200 border-y border-gray-200 dark:divide-gray-800 dark:border-gray-800">
 			{posts.map((post, i) => (
 				<div class="reveal" style={`transition-delay:${Math.min(i, 6) * 60}ms`}>
 					<PostCard
