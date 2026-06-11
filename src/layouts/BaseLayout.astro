@@ -10,6 +10,10 @@ interface Props {
 	image?: string;
 	/** 文章页用更宽的容器，给目录侧边栏留位置 */
 	wide?: boolean;
+	/** 隐藏页脚（如首页） */
+	hideFooter?: boolean;
+	/** 整页占满视口高度、不出现滚动条（如首页） */
+	fullHeight?: boolean;
 }
 
 const {
@@ -17,6 +21,8 @@ const {
 	description = SITE_DESCRIPTION,
 	image,
 	wide = false,
+	hideFooter = false,
+	fullHeight = false,
 } = Astro.props;
 ---
 
@@ -26,13 +32,25 @@ const {
 		<BaseHead title={title} description={description} image={image} />
 	</head>
 	<body
-		class="min-h-screen bg-white font-sans text-gray-900 antialiased selection:text-gray-900 dark:bg-gray-950 dark:text-gray-100 dark:selection:text-gray-100"
+		class:list={[
+			'relative bg-white font-sans text-zinc-900 antialiased selection:text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100 dark:selection:text-zinc-100',
+			fullHeight ? 'flex h-dvh flex-col overflow-hidden' : 'min-h-screen',
+		]}
 	>
+		<!-- 极隐蔽的高级感背景噪点/径向渐变 -->
+		<div class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-100/50 to-white dark:from-zinc-900/50 dark:to-zinc-950"></div>
+
 		<Header />
-		<main class:list={['mx-auto px-4 py-12 sm:px-6 sm:py-16', wide ? 'max-w-6xl' : 'max-w-3xl']}>
+		<main
+			class:list={[
+				'mx-auto w-full px-4 sm:px-6',
+				fullHeight ? 'flex min-h-0 flex-1 flex-col' : 'py-16 sm:py-24',
+				wide ? 'max-w-5xl' : 'max-w-[700px]',
+			]}
+		>
 			<slot />
 		</main>
-		<Footer />
+		{!hideFooter && <Footer />}
 
 		<!-- 滚动入场动画：元素进入视口时加 .in-view -->
 		<script>

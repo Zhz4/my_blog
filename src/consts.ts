@@ -1,6 +1,6 @@
 // 全站通用的常量配置，在多个页面 / 组件里复用
-export const SITE_TITLE = '我的博客';
-export const SITE_DESCRIPTION = '用 Astro + Tailwind CSS 搭建的个人博客 —— 记录技术、阅读与生活。';
+export const SITE_TITLE = 'Smooth の 空间';
+export const SITE_DESCRIPTION = '前端开发者 Smooth 的博客，记录 React、Vue 与 AI Agent 开发中的笔记和踩过的坑。';
 
 export const NAV_LINKS = [
 	{ href: '/', label: '首页' },
