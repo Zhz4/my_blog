@@ -20,10 +20,10 @@ export const POSTS_PER_PAGE = 4;
 //   4. 打开 https://giscus.app，填入仓库，复制生成的 repoId / categoryId 填到下面
 // 在 repoId 填好之前，文章页会显示一个“未配置”的占位提示，不影响其他功能。
 export const GISCUS = {
-	repo: '' as `${string}/${string}` | '', // 例如 'zhanghuizhong/my_blog'
-	repoId: '',
-	category: 'Announcements',
-	categoryId: '',
+	repo: 'Zhz4/my_blog' as `${string}/${string}` | '',
+	repoId: 'R_kgDOS1GcTw',
+	category: 'Q&A',
+	categoryId: 'DIC_kwDOS1GcT84C--CC',
 	mapping: 'pathname',
 	reactionsEnabled: '1',
 	lang: 'zh-CN',

@@ -52,6 +52,7 @@ const configured = Boolean(GISCUS.repo && GISCUS.repoId && GISCUS.categoryId);
 			s.setAttribute('data-input-position', 'top');
 			s.setAttribute('data-theme', theme);
 			s.setAttribute('data-lang', GISCUS.lang);
+			s.setAttribute('data-loading', GISCUS.loading);
 			s.crossOrigin = 'anonymous';
 			s.async = true;
 			document.querySelector('.giscus-wrapper .giscus')?.appendChild(s);
