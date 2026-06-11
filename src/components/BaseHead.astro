@@ -89,4 +89,26 @@ const fullTitle = title === SITE_TITLE ? title : `${title} · ${SITE_TITLE}`;
 		}
 	})();
 </script>
+
+<!-- 浏览量统计（Vercount，不蒜子的稳定替代，标签 id 完全兼容）。
+     站点用了 ClientRouter，普通脚本只在首次整页加载执行一次，换页后不会重新计数；
+     这里改为每次 astro:page-load（含首次加载）都重新注入脚本，让它对当前页重新计数。-->
+<script is:inline>
+	(() => {
+		function loadVercount() {
+			// 仅在带浏览量占位符的文章页注入，其它页面跳过
+			if (!document.getElementById('vercount_value_page_pv')) return;
+			document.getElementById('vercount-script')?.remove();
+			const s = document.createElement('script');
+			s.id = 'vercount-script';
+			s.src = 'https://events.vercount.one/js';
+			document.body.appendChild(s);
+		}
+
+		if (!window.__vercountReady) {
+			window.__vercountReady = true;
+			document.addEventListener('astro:page-load', loadVercount);
+		}
+	})();
+</script>
 <ClientRouter />
