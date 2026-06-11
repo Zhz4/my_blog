@@ -1,7 +1,6 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
 import CosmicBackground from '../components/CosmicBackground.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
@@ -11,8 +10,6 @@ interface Props {
 	image?: string;
 	/** 文章页用更宽的容器，给目录侧边栏留位置 */
 	wide?: boolean;
-	/** 隐藏页脚（如首页） */
-	hideFooter?: boolean;
 	/** 整页占满视口高度、不出现滚动条（如首页） */
 	fullHeight?: boolean;
 }
@@ -22,7 +19,6 @@ const {
 	description = SITE_DESCRIPTION,
 	image,
 	wide = false,
-	hideFooter = false,
 	fullHeight = false,
 } = Astro.props;
 ---
@@ -57,7 +53,6 @@ const {
 		>
 			<slot />
 		</main>
-		{!hideFooter && <Footer />}
 
 		<!-- 滚动入场动画：元素进入视口时加 .in-view -->
 		<script>

@@ -20,9 +20,11 @@
 	background-color: #ffffff;
 	--brand: var(--color-zinc-900);
 }
+
 .dark {
 	color-scheme: dark;
-	background-color: #09090b; /* zinc-950 */
+	background-color: #09090b;
+	/* zinc-950 */
 	--brand: var(--color-zinc-100);
 }
 
@@ -61,10 +63,9 @@ body {
 			opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
 			transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 	}
+
 	html.js .reveal.in-view {
 		opacity: 1;
 		transform: translateY(0);
 	}
 }
-
-/* hero 光晕已移除：极简留白风格不需要装饰性背景 */
