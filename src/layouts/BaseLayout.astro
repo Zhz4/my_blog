@@ -2,6 +2,7 @@
 import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import CosmicBackground from '../components/CosmicBackground.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
 interface Props {
@@ -37,14 +38,17 @@ const {
 			fullHeight ? 'flex h-dvh flex-col overflow-hidden' : 'min-h-screen',
 		]}
 	>
-		<!-- 极隐蔽的高级感背景噪点/径向渐变 -->
-		<div class="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-100/50 to-white dark:from-zinc-900/50 dark:to-zinc-950"></div>
+		<!-- 极隐蔽的高级感背景噪点/径向渐变（位于星空之下） -->
+		<div class="pointer-events-none fixed inset-0 -z-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-100/50 to-white dark:from-zinc-900/50 dark:to-zinc-950"></div>
+
+		<!-- 宇宙星空动效背景 -->
+		<CosmicBackground />
 
 		<Header />
 		<main
 			class:list={[
 				'mx-auto w-full px-4 sm:px-6',
-				fullHeight ? 'flex min-h-0 flex-1 flex-col' : 'py-16 sm:py-24',
+				fullHeight ? 'flex min-h-0 flex-1 flex-col' : 'pt-6 pb-16 sm:pt-8 sm:pb-24',
 				wide ? 'max-w-5xl' : 'max-w-[700px]',
 			]}
 		>

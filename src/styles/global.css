@@ -14,10 +14,15 @@
 }
 
 :root {
-	color-scheme: light dark;
+	/* color-scheme 跟随站点选定主题（而非系统），并给 <html> 一个底色，
+	   消除 MPA 切页瞬间浏览器默认白底造成的「闪白」 */
+	color-scheme: light;
+	background-color: #ffffff;
 	--brand: var(--color-zinc-900);
 }
 .dark {
+	color-scheme: dark;
+	background-color: #09090b; /* zinc-950 */
 	--brand: var(--color-zinc-100);
 }
 

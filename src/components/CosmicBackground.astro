@@ -1,0 +1,260 @@
+---
+// 全站宇宙星空背景：Three.js Points + 自定义着色器
+// 固定全屏、透明、置于内容之下，跟随明暗主题换色，尊重 prefers-reduced-motion
+---
+
+<canvas
+	id="cosmic-bg"
+	aria-hidden="true"
+	class="pointer-events-none fixed inset-0 -z-10 h-full w-full opacity-0 transition-opacity duration-1000 ease-out"
+></canvas>
+
+<script>
+	import * as THREE from 'three';
+
+	const canvas = document.getElementById('cosmic-bg') as HTMLCanvasElement | null;
+
+	// 缺少 canvas 或不支持 WebGL：直接降级为底层渐变背景
+	if (canvas) {
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		let renderer: THREE.WebGLRenderer;
+		try {
+			renderer = new THREE.WebGLRenderer({
+				canvas,
+				alpha: true,
+				antialias: true,
+				powerPreference: 'low-power',
+			});
+		} catch {
+			// WebGL 不可用，保持渐变背景即可
+			throw new Error('cosmic-bg: WebGL unavailable');
+		}
+
+		const STAR_COUNT = 2000;
+		const SPREAD = 600; // 星点立方体半边长
+
+		renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+		renderer.setClearAlpha(0);
+		renderer.setSize(window.innerWidth, window.innerHeight, false);
+
+		const scene = new THREE.Scene();
+		const camera = new THREE.PerspectiveCamera(
+			60,
+			window.innerWidth / window.innerHeight,
+			0.1,
+			3000
+		);
+		camera.position.z = 720;
+
+		// ---------- 星点几何 ----------
+		const positions = new Float32Array(STAR_COUNT * 3);
+		const sizes = new Float32Array(STAR_COUNT);
+		const phases = new Float32Array(STAR_COUNT);
+		const twinkles = new Float32Array(STAR_COUNT);
+		const tints = new Float32Array(STAR_COUNT);
+		const TWO_PI = Math.PI * 2;
+
+		for (let i = 0; i < STAR_COUNT; i++) {
+			positions[i * 3 + 0] = (Math.random() * 2 - 1) * SPREAD;
+			positions[i * 3 + 1] = (Math.random() * 2 - 1) * SPREAD;
+			positions[i * 3 + 2] = (Math.random() * 2 - 1) * SPREAD;
+			// 多数细小、少数偏大的亮星（幂次偏斜）
+			sizes[i] = 0.8 + Math.pow(Math.random(), 4) * 7;
+			phases[i] = Math.random() * TWO_PI;
+			twinkles[i] = 0.4 + Math.random() * 1.1; // 各自闪烁速度，避免齐闪
+			// 多数无色调、少数偏冷蓝/紫
+			tints[i] = Math.pow(Math.random(), 3);
+		}
+
+		const geometry = new THREE.BufferGeometry();
+		geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+		geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+		geometry.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
+		geometry.setAttribute('aTwinkle', new THREE.BufferAttribute(twinkles, 1));
+		geometry.setAttribute('aTint', new THREE.BufferAttribute(tints, 1));
+
+		// ---------- 着色器材质 ----------
+		const uniforms = {
+			uTime: { value: 0 },
+			uPixelRatio: { value: renderer.getPixelRatio() },
+			uColor: { value: new THREE.Color('#ffffff') },
+			uAccent: { value: new THREE.Color('#9db4ff') },
+			uAlpha: { value: 1.0 },
+			uSizeScale: { value: 1.0 },
+		};
+
+		const material = new THREE.ShaderMaterial({
+			uniforms,
+			transparent: true,
+			depthWrite: false,
+			blending: THREE.AdditiveBlending,
+			vertexShader: /* glsl */ `
+				attribute float aSize;
+				attribute float aPhase;
+				attribute float aTwinkle;
+				attribute float aTint;
+
+				uniform float uTime;
+				uniform float uPixelRatio;
+				uniform float uSizeScale;
+				uniform vec3 uColor;
+				uniform vec3 uAccent;
+				uniform float uAlpha;
+
+				varying float vAlpha;
+				varying vec3 vColor;
+
+				void main() {
+					vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+					// 距离衰减：近大远小
+					gl_PointSize = aSize * uSizeScale * uPixelRatio * (320.0 / -mvPosition.z);
+					gl_Position = projectionMatrix * mvPosition;
+
+					// 闪烁（每颗星独立速度 + 相位）
+					float twinkle = 0.65 + 0.35 * sin(uTime * aTwinkle + aPhase);
+					vAlpha = clamp(twinkle, 0.0, 1.0) * uAlpha;
+					vColor = mix(uColor, uAccent, aTint);
+				}
+			`,
+			fragmentShader: /* glsl */ `
+				precision mediump float;
+
+				varying float vAlpha;
+				varying vec3 vColor;
+
+				void main() {
+					// 软圆形星点：中心亮、边缘羽化
+					float d = length(gl_PointCoord - vec2(0.5));
+					if (d > 0.5) discard;
+					float edge = smoothstep(0.5, 0.05, d);
+					gl_FragColor = vec4(vColor, edge * vAlpha);
+				}
+			`,
+		});
+
+		const stars = new THREE.Points(geometry, material);
+		const group = new THREE.Group();
+		group.add(stars);
+		scene.add(group);
+
+		// ---------- 主题适配 ----------
+		function applyTheme() {
+			const isDark = document.documentElement.classList.contains('dark');
+			if (isDark) {
+				uniforms.uColor.value.set('#ffffff');
+				uniforms.uAccent.value.set('#9db4ff');
+				uniforms.uAlpha.value = 1.0;
+				uniforms.uSizeScale.value = 1.0;
+				material.blending = THREE.AdditiveBlending;
+			} else {
+				// 白底上的极淡深色尘点
+				uniforms.uColor.value.set('#3f3f46'); // zinc-700
+				uniforms.uAccent.value.set('#6366f1'); // indigo-500，少量点缀
+				uniforms.uAlpha.value = 0.45;
+				uniforms.uSizeScale.value = 0.8;
+				material.blending = THREE.NormalBlending;
+			}
+			material.needsUpdate = true;
+		}
+		applyTheme();
+
+		const themeObserver = new MutationObserver(() => {
+			applyTheme();
+			if (reduceMotion) renderer.render(scene, camera); // 静态模式下也要重绘换色
+		});
+		themeObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ['class'],
+		});
+
+		// ---------- 视差（鼠标 / 触摸）----------
+		let pointerX = 0;
+		let pointerY = 0;
+		const MAX_TILT = 0.18; // 最大倾斜弧度
+
+		function onPointer(clientX: number, clientY: number) {
+			pointerX = (clientX / window.innerWidth) * 2 - 1;
+			pointerY = (clientY / window.innerHeight) * 2 - 1;
+		}
+		if (!reduceMotion) {
+			window.addEventListener(
+				'mousemove',
+				(e) => onPointer(e.clientX, e.clientY),
+				{ passive: true }
+			);
+			window.addEventListener(
+				'touchmove',
+				(e) => {
+					if (e.touches[0]) onPointer(e.touches[0].clientX, e.touches[0].clientY);
+				},
+				{ passive: true }
+			);
+		}
+
+		// ---------- resize ----------
+		function onResize() {
+			const w = window.innerWidth;
+			const h = window.innerHeight;
+			camera.aspect = w / h;
+			camera.updateProjectionMatrix();
+			renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+			renderer.setSize(w, h, false);
+			uniforms.uPixelRatio.value = renderer.getPixelRatio();
+			if (reduceMotion) renderer.render(scene, camera);
+		}
+		window.addEventListener('resize', onResize, { passive: true });
+
+		// ---------- 渲染 ----------
+		let revealed = false;
+		function reveal() {
+			if (!revealed) {
+				revealed = true;
+				canvas!.style.opacity = '1';
+			}
+		}
+
+		if (reduceMotion) {
+			// 减弱动态效果：只渲染一帧静态星空
+			renderer.render(scene, camera);
+			reveal();
+		} else {
+			let rafId = 0;
+			let running = true;
+			let curRotX = 0;
+			let curRotY = 0;
+
+			function animate(t: number) {
+				if (!running) return;
+				rafId = requestAnimationFrame(animate);
+
+				const time = t * 0.001;
+				uniforms.uTime.value = time;
+
+				// 缓动趋向鼠标目标 + 恒定缓慢漂移
+				const targetX = pointerY * MAX_TILT;
+				const targetY = pointerX * MAX_TILT;
+				curRotX += (targetX - curRotX) * 0.04;
+				curRotY += (targetY - curRotY) * 0.04;
+				group.rotation.x = curRotX;
+				group.rotation.y = curRotY + time * 0.01;
+				group.rotation.z = Math.sin(time * 0.02) * 0.02;
+
+				renderer.render(scene, camera);
+				reveal();
+			}
+			rafId = requestAnimationFrame(animate);
+
+			// 标签页隐藏时暂停，避免后台空转/掉帧堆积
+			document.addEventListener('visibilitychange', () => {
+				if (document.hidden) {
+					running = false;
+					cancelAnimationFrame(rafId);
+				} else if (!running) {
+					running = true;
+					rafId = requestAnimationFrame(animate);
+				}
+			});
+		}
+	}
+</script>
