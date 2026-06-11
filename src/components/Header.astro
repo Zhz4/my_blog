@@ -101,8 +101,6 @@ const isActive = (href: string) =>
 </header>
 
 <script>
-  const toggle = document.getElementById("theme-toggle");
-
   function syncGiscusTheme(theme: "light" | "dark") {
     const iframe = document.querySelector<HTMLIFrameElement>(
       "iframe.giscus-frame",
@@ -113,10 +111,23 @@ const isActive = (href: string) =>
     );
   }
 
-  toggle?.addEventListener("click", () => {
-    const isDark = document.documentElement.classList.toggle("dark");
-    const theme = isDark ? "dark" : "light";
-    localStorage.setItem("theme", theme);
-    syncGiscusTheme(theme);
-  });
+  function setupThemeToggle() {
+    const toggle = document.getElementById("theme-toggle") as HTMLButtonElement | null;
+    if (!toggle || toggle.dataset.themeToggleInitialized === "true") return;
+    toggle.dataset.themeToggleInitialized = "true";
+
+    toggle.addEventListener("click", () => {
+      const root = document.documentElement;
+      const isDark = root.classList.toggle("dark");
+      const theme = isDark ? "dark" : "light";
+      localStorage.setItem("theme", theme);
+      // 同步首帧脚本写下的行内样式，否则行内样式会盖过 CSS 导致背景不随切换变化
+      root.style.colorScheme = isDark ? "dark" : "light";
+      root.style.backgroundColor = isDark ? "#09090b" : "#ffffff";
+      syncGiscusTheme(theme);
+    });
+  }
+
+  setupThemeToggle();
+  document.addEventListener("astro:page-load", setupThemeToggle);
 </script>

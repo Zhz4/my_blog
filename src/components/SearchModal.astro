@@ -68,17 +68,26 @@
 </style>
 
 <script>
-	const openBtn = document.getElementById('search-open');
-	const modal = document.getElementById('search-modal') as HTMLDialogElement | null;
-	const input = document.getElementById('search-input') as HTMLInputElement | null;
-	const resultsEl = document.getElementById('search-results');
+	const searchState = window as typeof window & {
+		__cleanupSearchModal?: () => void;
+	};
 
-	if (modal && input && resultsEl) {
+	function setupSearchModal() {
+		searchState.__cleanupSearchModal?.();
+		searchState.__cleanupSearchModal = undefined;
+
+		const openBtn = document.getElementById('search-open');
+		const modal = document.getElementById('search-modal') as HTMLDialogElement | null;
+		const input = document.getElementById('search-input') as HTMLInputElement | null;
+		const resultsEl = document.getElementById('search-results');
+
+		if (!modal || !input || !resultsEl) return;
+
 		let pagefind: any = null;
 		let loadFailed = false;
 		let activeIndex = -1;
 		let links: HTMLAnchorElement[] = [];
-		let debounceTimer: ReturnType<typeof setTimeout>;
+		let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
 		const escapeHtml = (s: string) =>
 			s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] as string);
@@ -113,22 +122,6 @@
 			if (modal!.open) modal!.close();
 		}
 
-		openBtn?.addEventListener('click', open);
-		modal.addEventListener('close', () => {
-			document.documentElement.style.overflow = '';
-		});
-		// 点击 backdrop（即 dialog 元素本身的空白区域）关闭
-		modal.addEventListener('click', (e) => {
-			if (e.target === modal) close();
-		});
-
-		document.addEventListener('keydown', (e) => {
-			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-				e.preventDefault();
-				modal!.open ? close() : open();
-			}
-		});
-
 		function setActive(i: number) {
 			links.forEach((a) => a.removeAttribute('data-active'));
 			activeIndex = i;
@@ -138,30 +131,6 @@
 				el.scrollIntoView({ block: 'nearest' });
 			}
 		}
-
-		input.addEventListener('input', () => {
-			const q = input!.value.trim();
-			clearTimeout(debounceTimer);
-			if (!q) {
-				message('输入关键词开始搜索');
-				return;
-			}
-			debounceTimer = setTimeout(() => runSearch(q), 180);
-		});
-
-		input.addEventListener('keydown', (e) => {
-			if (!links.length) return;
-			if (e.key === 'ArrowDown') {
-				e.preventDefault();
-				setActive((activeIndex + 1) % links.length);
-			} else if (e.key === 'ArrowUp') {
-				e.preventDefault();
-				setActive((activeIndex - 1 + links.length) % links.length);
-			} else if (e.key === 'Enter' && links[activeIndex]) {
-				e.preventDefault();
-				window.location.href = links[activeIndex].href;
-			}
-		});
 
 		async function runSearch(q: string) {
 			const pf = await loadPagefind();
@@ -189,5 +158,63 @@
 			});
 			setActive(0);
 		}
+
+		const onOpenClick = () => open();
+		const onModalClose = () => {
+			document.documentElement.style.overflow = '';
+		};
+		const onModalClick = (e: MouseEvent) => {
+			if (e.target === modal) close();
+		};
+		const onDocumentKeydown = (e: KeyboardEvent) => {
+			if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+				e.preventDefault();
+				modal!.open ? close() : open();
+			}
+		};
+		const onInput = () => {
+			const q = input!.value.trim();
+			if (debounceTimer) clearTimeout(debounceTimer);
+			if (!q) {
+				message('输入关键词开始搜索');
+				return;
+			}
+			debounceTimer = setTimeout(() => runSearch(q), 180);
+		};
+		const onInputKeydown = (e: KeyboardEvent) => {
+			if (!links.length) return;
+			if (e.key === 'ArrowDown') {
+				e.preventDefault();
+				setActive((activeIndex + 1) % links.length);
+			} else if (e.key === 'ArrowUp') {
+				e.preventDefault();
+				setActive((activeIndex - 1 + links.length) % links.length);
+			} else if (e.key === 'Enter' && links[activeIndex]) {
+				e.preventDefault();
+				links[activeIndex].click();
+			}
+		};
+
+		openBtn?.addEventListener('click', onOpenClick);
+		modal.addEventListener('close', onModalClose);
+		// 点击 backdrop（即 dialog 元素本身的空白区域）关闭
+		modal.addEventListener('click', onModalClick);
+		document.addEventListener('keydown', onDocumentKeydown);
+		input.addEventListener('input', onInput);
+		input.addEventListener('keydown', onInputKeydown);
+
+		searchState.__cleanupSearchModal = () => {
+			if (debounceTimer) clearTimeout(debounceTimer);
+			openBtn?.removeEventListener('click', onOpenClick);
+			modal.removeEventListener('close', onModalClose);
+			modal.removeEventListener('click', onModalClick);
+			document.removeEventListener('keydown', onDocumentKeydown);
+			input.removeEventListener('input', onInput);
+			input.removeEventListener('keydown', onInputKeydown);
+			document.documentElement.style.overflow = '';
+		};
 	}
+
+	setupSearchModal();
+	document.addEventListener('astro:page-load', setupSearchModal);
 </script>
