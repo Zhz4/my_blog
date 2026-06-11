@@ -8,7 +8,7 @@ import pagefind from 'astro-pagefind';
 // https://astro.build/config
 export default defineConfig({
 	// TODO: 部署前改成你自己的站点地址（RSS / sitemap 会用到）
-	site: 'https://example.com',
+	site: 'https://blog.smooth.click',
 	// pagefind 会在 build 后自动为 dist/ 生成全文检索索引，并在 dev 下提供 /pagefind 代理
 	integrations: [mdx(), sitemap(), pagefind()],
 	markdown: {
