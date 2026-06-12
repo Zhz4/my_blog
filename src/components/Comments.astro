@@ -38,24 +38,36 @@ const configured = Boolean(GISCUS.repo && GISCUS.repoId && GISCUS.categoryId);
 {
 	configured && (
 		<script is:inline define:vars={{ GISCUS }}>
-			const theme = 'dark';
-			const s = document.createElement('script');
-			s.src = 'https://giscus.app/client.js';
-			s.setAttribute('data-repo', GISCUS.repo);
-			s.setAttribute('data-repo-id', GISCUS.repoId);
-			s.setAttribute('data-category', GISCUS.category);
-			s.setAttribute('data-category-id', GISCUS.categoryId);
-			s.setAttribute('data-mapping', GISCUS.mapping);
-			s.setAttribute('data-strict', '0');
-			s.setAttribute('data-reactions-enabled', GISCUS.reactionsEnabled);
-			s.setAttribute('data-emit-metadata', '0');
-			s.setAttribute('data-input-position', 'top');
-			s.setAttribute('data-theme', theme);
-			s.setAttribute('data-lang', GISCUS.lang);
-			s.setAttribute('data-loading', GISCUS.loading);
-			s.crossOrigin = 'anonymous';
-			s.async = true;
-			document.querySelector('.giscus-wrapper .giscus')?.appendChild(s);
+			(() => {
+				function loadGiscus() {
+					const container = document.querySelector('.giscus-wrapper .giscus');
+					// 非文章页（无评论容器）或本页已注入过，跳过
+					if (!container || container.querySelector('script[src*="giscus.app/client.js"]')) return;
+					const s = document.createElement('script');
+					s.src = 'https://giscus.app/client.js';
+					s.setAttribute('data-repo', GISCUS.repo);
+					s.setAttribute('data-repo-id', GISCUS.repoId);
+					s.setAttribute('data-category', GISCUS.category);
+					s.setAttribute('data-category-id', GISCUS.categoryId);
+					s.setAttribute('data-mapping', GISCUS.mapping);
+					s.setAttribute('data-strict', '0');
+					s.setAttribute('data-reactions-enabled', GISCUS.reactionsEnabled);
+					s.setAttribute('data-emit-metadata', '0');
+					s.setAttribute('data-input-position', 'top');
+					s.setAttribute('data-theme', 'dark');
+					s.setAttribute('data-lang', GISCUS.lang);
+					s.crossOrigin = 'anonymous';
+					s.async = true;
+					container.appendChild(s);
+				}
+
+				// 站点启用了 ClientRouter：内容相同的内联脚本切页后不会重新执行，
+				// 因此改为每次 astro:page-load（含首次加载）都为当前页重新注入 giscus。
+				if (!window.__giscusReady) {
+					window.__giscusReady = true;
+					document.addEventListener('astro:page-load', loadGiscus);
+				}
+			})();
 		</script>
 	)
 }
