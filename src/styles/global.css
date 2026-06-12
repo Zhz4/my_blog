@@ -40,6 +40,14 @@ body {
 	background-color: color-mix(in oklab, var(--color-zinc-500) 20%, transparent);
 }
 
+/* ---------- 正文排版：收紧 prose 字号，与站点 14px 的 UI 字号更协调 ----------
+   标题等用 em 表示，会随根字号按比例一起缩小，整体比例不变 */
+.prose {
+	font-size: 0.9rem;
+	/* 14px，与站点 UI 字号对齐 */
+	line-height: 1.2;
+}
+
 /* ---------- 代码块：跟随明暗主题（Shiki 双主题） ---------- */
 .dark .astro-code,
 .dark .astro-code span {
