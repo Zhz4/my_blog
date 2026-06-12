@@ -48,21 +48,21 @@ tags: ["AI", "深度学习", "自注意力机制"]
 
 > 假设 q 和 k 都有 $d_k$ 个维度：
 >
-> $ q \cdot k = q_1 k_1 + q_2 k_2 + \cdots + q_{d_k} k_{d_k} $
+> $$ q \cdot k = q_1 k_1 + q_2 k_2 + \cdots + q_{d_k} k_{d_k} $$
 >
 > 维度越多，累加的项就越多，点积的结果通常就越大。
 >
 > 如果每个分量均值为0,、方差为1，那么点积的方差大约是：
 >
-> $ \operatorname{Var}(q \cdot k) \approx d_k $
+> $$ \operatorname{Var}(q \cdot k) \approx d_k $$
 >
 > 标准差就是
 >
-> $ \sqrt{d_k} $
+> $$ \sqrt{d_k} $$
 >
 > 因此除以 $ \sqrt{d_k} $后：
 >
-> $ \operatorname{Var}\left(\frac{q \cdot k}{\sqrt{d_k}}\right) \approx 1 $
+> $$ \operatorname{Var}\left(\frac{q \cdot k}{\sqrt{d_k}}\right) \approx 1 $$
 >
 > 它的作用就是让不同维度下的分数保持在相对稳定的范围。
 >
@@ -93,7 +93,7 @@ tags: ["AI", "深度学习", "自注意力机制"]
 
 计算得到的 Q、K都包含3个token的想来那个，注意力原始分是
 
-$ S = \frac{QK^{T}}{\sqrt{d_k}} $
+$$ S = \frac{QK^{T}}{\sqrt{d_k}} $$
 
 结果是一个 3 × 3的矩阵：
 
@@ -123,28 +123,28 @@ $$
 
 假设经过计算得到：
 
-$ S =
+$$ S =
 \begin{bmatrix}
 1.2 & 0.5 & 0.1 \\
 0.8 & 1.0 & 1.7 \\
 0.2 & 1.3 & 0.9
-\end{bmatrix} $
+\end{bmatrix} $$
 
 然后对每一行进行 Softmax可能得到
 
-$ S =
+$$ S =
 \begin{bmatrix}
 0.55 & 0.27 & 0.18 \\
 0.22 & 0.27 & 0.51 \\
 0.17 & 0.52 & 0.31
-\end{bmatrix} $
+\end{bmatrix} $$
 
 例如在第二行：
 
-$ S =
+$$ S =
 \begin{bmatrix}
 0.22 & 0.27 & 0.51
-\end{bmatrix} $
+\end{bmatrix} $$
 
 表示在更新“喜欢”这个token时：
 
