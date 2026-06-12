@@ -5,7 +5,9 @@ export const SITE_DESCRIPTION = '前端开发者 Smooth 的博客，记录 React
 export const NAV_LINKS = [
 	{ href: '/', label: '首页' },
 	{ href: '/blog', label: '博客' },
+	{ href: '/categories', label: '分类' },
 	{ href: '/tags', label: '标签' },
+	{ href: '/archive', label: '归档' },
 	{ href: '/about', label: '关于' },
 ] as const;
 

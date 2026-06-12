@@ -3,6 +3,7 @@ title: '为什么我重新开始写博客'
 description: '一篇随笔 —— 关于公开写作、慢思考,以及把想法沉淀下来的意义。'
 pubDate: 2026-06-01
 tags: ['随笔', '阅读']
+category: '随笔'
 heroImage: ../../assets/covers/reading-notes.webp
 ---
 

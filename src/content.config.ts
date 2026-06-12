@@ -13,6 +13,8 @@ const blog = defineCollection({
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
 			tags: z.array(z.string()).default([]),
+			// 分类：单选的主归属大类，不填则归到「未分类」
+			category: z.string().default('未分类'),
 			draft: z.boolean().default(false),
 			// 封面图：相对当前 md 文件的路径，可选。不填则用确定性渐变占位
 			heroImage: image().optional(),

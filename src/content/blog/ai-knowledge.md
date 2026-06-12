@@ -3,6 +3,7 @@ title: 'CNN 架构基础概念'
 description: '从输入层、卷积层、池化层到全连接层，梳理卷积神经网络（CNN）的整体架构与核心思想。'
 pubDate: 2026-06-08
 tags: ['AI', '深度学习', 'CNN']
+category: '技术'
 ---
 
 ## CNN架构的基础概念

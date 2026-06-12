@@ -1,0 +1,61 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+
+// 统计每个分类下的文章数
+const counts = new Map<string, number>();
+for (const post of posts) {
+	const category = post.data.category;
+	counts.set(category, (counts.get(category) ?? 0) + 1);
+}
+const categories = [...counts.entries()].sort(
+	(a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
+);
+---
+
+<BaseLayout title="分类" description="按分类浏览全部文章">
+	<header class="mb-8">
+		<h1 class="text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-100">分类</h1>
+		<p class="mt-2 text-gray-600 dark:text-gray-300">共 {categories.length} 个分类，点击查看相关文章。</p>
+	</header>
+
+	{
+		categories.length === 0 ? (
+			<p class="text-gray-500 dark:text-gray-400">还没有分类。</p>
+		) : (
+			<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+				{categories.map(([category, count]) => (
+					<a
+						href={`/categories/${category}/`}
+						class="group flex items-center justify-between rounded-2xl border border-gray-200 bg-white/40 p-5 transition-colors hover:border-purple-300 dark:border-gray-800 dark:bg-white/[0.02] dark:hover:border-purple-700/60"
+					>
+						<div class="flex items-center gap-3">
+							<span class="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gray-100 text-gray-500 transition-colors group-hover:bg-purple-100 group-hover:text-purple-600 dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-purple-950/50 dark:group-hover:text-purple-400">
+								<svg
+									viewBox="0 0 24 24"
+									class="h-5 w-5"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="2"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									aria-hidden="true"
+								>
+									<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+								</svg>
+							</span>
+							<span class="text-base font-medium text-gray-800 transition-colors group-hover:text-purple-600 dark:text-gray-200 dark:group-hover:text-purple-400">
+								{category}
+							</span>
+						</div>
+						<span class="grid h-6 min-w-6 place-items-center rounded-full bg-gray-100 px-2 text-xs text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+							{count}
+						</span>
+					</a>
+				))}
+			</div>
+		)
+	}
+</BaseLayout>
