@@ -2,6 +2,7 @@
 import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import CosmicBackground from '../components/CosmicBackground.astro';
+import ProgressBar from '../components/ProgressBar.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 
 interface Props {
@@ -34,6 +35,9 @@ const {
 			fullHeight ? 'flex h-dvh flex-col overflow-hidden' : 'min-h-screen',
 		]}
 	>
+		<!-- 顶部路由加载进度条 -->
+		<ProgressBar />
+
 		<!-- 极隐蔽的高级感背景噪点/径向渐变（位于星空之下） -->
 		<div
 			transition:persist="site-background"

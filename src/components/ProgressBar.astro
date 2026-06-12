@@ -1,0 +1,92 @@
+---
+// 顶部路由加载进度条：跟随 Astro ClientRouter（View Transitions）的导航生命周期。
+// - astro:before-preparation：导航开始，进度条出现并缓慢「涓流」前进
+// - astro:before-swap / page-load：导航完成，进度冲到 100% 后淡出
+// transition:persist 让进度条本身在换页时不被替换掉，保证动画连贯。
+---
+
+<div id="route-progress" transition:persist="route-progress" aria-hidden="true"></div>
+
+<style>
+	#route-progress {
+		position: fixed;
+		top: 0;
+		left: 0;
+		z-index: 100;
+		height: 2px;
+		width: 100%;
+		/* 通过 scaleX 控制进度，性能好且不触发重排 */
+		transform: scaleX(0);
+		transform-origin: 0 50%;
+		opacity: 0;
+		background: linear-gradient(
+			90deg,
+			var(--color-violet-500, #8b5cf6),
+			var(--color-sky-400, #38bdf8)
+		);
+		box-shadow: 0 0 8px color-mix(in oklab, var(--color-sky-400, #38bdf8) 60%, transparent);
+		pointer-events: none;
+		will-change: transform, opacity;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		#route-progress {
+			transition: none !important;
+		}
+	}
+</style>
+
+<script is:inline>
+	(() => {
+		if (window.__routeProgressReady) return;
+		window.__routeProgressReady = true;
+
+		let trickle = null;
+
+		function bar() {
+			return document.getElementById('route-progress');
+		}
+
+		function set(value, duration) {
+			const el = bar();
+			if (!el) return;
+			el.style.transition = `transform ${duration}ms cubic-bezier(0.16, 1, 0.3, 1), opacity 200ms ease`;
+			el.style.opacity = '1';
+			el.style.transform = `scaleX(${value})`;
+		}
+
+		function start() {
+			const el = bar();
+			if (!el) return;
+			clearInterval(trickle);
+			// 立即归零再出场，避免上一次的残留
+			el.style.transition = 'none';
+			el.style.transform = 'scaleX(0)';
+			el.style.opacity = '1';
+			// 强制回流后开始动画
+			void el.offsetWidth;
+
+			let progress = 0.08;
+			set(progress, 300);
+			// 涓流推进：越接近 90% 越慢，永远到不了头，等导航完成再收尾
+			trickle = setInterval(() => {
+				progress += (0.9 - progress) * 0.12;
+				set(progress, 300);
+			}, 240);
+		}
+
+		function done() {
+			const el = bar();
+			if (!el) return;
+			clearInterval(trickle);
+			set(1, 200);
+			setTimeout(() => {
+				el.style.transition = 'opacity 300ms ease';
+				el.style.opacity = '0';
+			}, 220);
+		}
+
+		document.addEventListener('astro:before-preparation', start);
+		document.addEventListener('astro:page-load', done);
+	})();
+</script>

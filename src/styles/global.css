@@ -25,6 +25,9 @@
 html {
 	scroll-behavior: smooth;
 	-webkit-text-size-adjust: 100%;
+	/* 始终预留滚动条槽位，避免在「有滚动条页」与「无滚动条页（如首页 overflow-hidden）」
+	   之间切换时视口宽度变化，导致居中的 Header 水平抖动 */
+	scrollbar-gutter: stable;
 }
 
 body {
