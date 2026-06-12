@@ -23,9 +23,8 @@ const fullTitle = title === SITE_TITLE ? title : `${title} · ${SITE_TITLE}`;
 <!-- 全局 meta -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<!-- 声明本页支持明暗两套配色：脚本执行前（导航提交那一瞬）浏览器据此按系统
-     明暗铺底色，避免暗色下刷新/切页时先闪一帧白底 -->
-<meta name="color-scheme" content="dark light" />
+<!-- 站点仅暗色：浏览器据此在脚本执行前即铺暗色底，避免刷新/切页闪白 -->
+<meta name="color-scheme" content="dark" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="sitemap" href="/sitemap-index.xml" />
 <link
@@ -56,35 +55,22 @@ const fullTitle = title === SITE_TITLE ? title : `${title} · ${SITE_TITLE}`;
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image, Astro.url)} />
 
-<!-- 在首帧渲染前确定明暗主题，避免暗色模式闪烁；并标记 JS 已启用 -->
+<!-- 站点仅暗色：首帧即写入 <html> 行内底色，不依赖外部 CSS 加载时序，
+     杜绝整页刷新/客户端换页时（CSS 未就绪那一帧）的白底闪烁；并标记 JS 已启用 -->
 <script is:inline>
 	(() => {
-		function getTheme() {
-			const stored = localStorage.getItem('theme');
-			if (stored === 'light' || stored === 'dark') return stored;
-			return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-		}
-
 		function applyTheme(root) {
-			const isDark = getTheme() === 'dark';
-			root.classList.add('js');
-			root.classList.toggle('dark', isDark);
-			// 直接写到 <html> 行内样式：不依赖外部 CSS 加载时序，首帧即生效，
-			// 杜绝整页刷新/客户端换页时（CSS 未就绪那一帧）的白底闪烁
-			root.style.colorScheme = isDark ? 'dark' : 'light';
-			root.style.backgroundColor = isDark ? '#09090b' : '#ffffff';
+			root.classList.add('js', 'dark');
+			root.style.colorScheme = 'dark';
+			root.style.backgroundColor = '#09090b';
 		}
 
 		applyTheme(document.documentElement);
-		window.__applyBlogTheme = applyTheme;
 
 		if (!window.__blogThemeSwapReady) {
 			window.__blogThemeSwapReady = true;
 			document.addEventListener('astro:before-swap', (event) => {
 				applyTheme(event.newDocument.documentElement);
-			});
-			document.addEventListener('astro:after-swap', () => {
-				applyTheme(document.documentElement);
 			});
 		}
 	})();
