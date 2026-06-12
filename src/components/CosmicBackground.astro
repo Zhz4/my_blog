@@ -169,30 +169,6 @@
 			attributeFilter: ['class'],
 		});
 
-		// ---------- 视差（鼠标 / 触摸）----------
-		let pointerX = 0;
-		let pointerY = 0;
-		const MAX_TILT = 0.18; // 最大倾斜弧度
-
-		function onPointer(clientX: number, clientY: number) {
-			pointerX = (clientX / window.innerWidth) * 2 - 1;
-			pointerY = (clientY / window.innerHeight) * 2 - 1;
-		}
-		if (!reduceMotion) {
-			window.addEventListener(
-				'mousemove',
-				(e) => onPointer(e.clientX, e.clientY),
-				{ passive: true }
-			);
-			window.addEventListener(
-				'touchmove',
-				(e) => {
-					if (e.touches[0]) onPointer(e.touches[0].clientX, e.touches[0].clientY);
-				},
-				{ passive: true }
-			);
-		}
-
 		// ---------- resize ----------
 		function onResize() {
 			const w = window.innerWidth;
@@ -222,8 +198,6 @@
 		} else {
 			let rafId = 0;
 			let running = true;
-			let curRotX = 0;
-			let curRotY = 0;
 
 			function animate(t: number) {
 				if (!running) return;
@@ -232,13 +206,9 @@
 				const time = t * 0.001;
 				uniforms.uTime.value = time;
 
-				// 缓动趋向鼠标目标 + 恒定缓慢漂移
-				const targetX = pointerY * MAX_TILT;
-				const targetY = pointerX * MAX_TILT;
-				curRotX += (targetX - curRotX) * 0.04;
-				curRotY += (targetY - curRotY) * 0.04;
-				group.rotation.x = curRotX;
-				group.rotation.y = curRotY + time * 0.01;
+				// 恒定缓慢漂移（不受鼠标影响）
+				group.rotation.x = Math.sin(time * 0.015) * 0.02;
+				group.rotation.y = time * 0.01;
 				group.rotation.z = Math.sin(time * 0.02) * 0.02;
 
 				renderer.render(scene, camera);
