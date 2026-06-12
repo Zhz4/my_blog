@@ -1,37 +1,40 @@
 ---
 // 所有页面共用的 <head> 内容：meta、SEO、RSS、防暗色闪烁脚本
-import '@fontsource-variable/outfit';
-import '@fontsource-variable/playfair-display';
-import '@fontsource/noto-serif-sc/400.css';
-import '@fontsource/noto-serif-sc/500.css';
-import '@fontsource/noto-serif-sc/700.css';
-import '../styles/global.css';
-import { ClientRouter } from 'astro:transitions';
-import { SITE_TITLE } from '../consts';
+import "@fontsource-variable/outfit";
+import "@fontsource-variable/playfair-display";
+import "@fontsource/noto-serif-sc/400.css";
+import "@fontsource/noto-serif-sc/500.css";
+import "@fontsource/noto-serif-sc/700.css";
+import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+import { SITE_TITLE } from "../consts";
 
 interface Props {
-	title: string;
-	description: string;
-	image?: string;
+  title: string;
+  description: string;
+  image?: string;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
-const { title, description, image = '/favicon.svg' } = Astro.props;
+const { title, description, image = "/favicon.svg" } = Astro.props;
 const fullTitle = title === SITE_TITLE ? title : `${title} · ${SITE_TITLE}`;
 ---
 
 <!-- 全局 meta -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- 不发送 Referer：语雀 CDN（cdn.nlark.com）开启了防盗链，带本站 Referer 会返回 403，
+     导致文章里的图片/公式无法显示；置空后 CDN 放行 -->
+<meta name="referrer" content="same-origin" />
 <!-- 站点仅暗色：浏览器据此在脚本执行前即铺暗色底，避免刷新/切页闪白 -->
 <meta name="color-scheme" content="dark" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="sitemap" href="/sitemap-index.xml" />
 <link
-	rel="alternate"
-	type="application/rss+xml"
-	title={SITE_TITLE}
-	href={new URL('rss.xml', Astro.site)}
+  rel="alternate"
+  type="application/rss+xml"
+  title={SITE_TITLE}
+  href={new URL("rss.xml", Astro.site)}
 />
 <meta name="generator" content={Astro.generator} />
 <link rel="canonical" href={canonicalURL} />
@@ -58,43 +61,43 @@ const fullTitle = title === SITE_TITLE ? title : `${title} · ${SITE_TITLE}`;
 <!-- 站点仅暗色：首帧即写入 <html> 行内底色，不依赖外部 CSS 加载时序，
      杜绝整页刷新/客户端换页时（CSS 未就绪那一帧）的白底闪烁；并标记 JS 已启用 -->
 <script is:inline>
-	(() => {
-		function applyTheme(root) {
-			root.classList.add('js', 'dark');
-			root.style.colorScheme = 'dark';
-			root.style.backgroundColor = '#09090b';
-		}
+  (() => {
+    function applyTheme(root) {
+      root.classList.add("js", "dark");
+      root.style.colorScheme = "dark";
+      root.style.backgroundColor = "#09090b";
+    }
 
-		applyTheme(document.documentElement);
+    applyTheme(document.documentElement);
 
-		if (!window.__blogThemeSwapReady) {
-			window.__blogThemeSwapReady = true;
-			document.addEventListener('astro:before-swap', (event) => {
-				applyTheme(event.newDocument.documentElement);
-			});
-		}
-	})();
+    if (!window.__blogThemeSwapReady) {
+      window.__blogThemeSwapReady = true;
+      document.addEventListener("astro:before-swap", (event) => {
+        applyTheme(event.newDocument.documentElement);
+      });
+    }
+  })();
 </script>
 
 <!-- 浏览量统计（Vercount，不蒜子的稳定替代，标签 id 完全兼容）。
      站点用了 ClientRouter，普通脚本只在首次整页加载执行一次，换页后不会重新计数；
      这里改为每次 astro:page-load（含首次加载）都重新注入脚本，让它对当前页重新计数。-->
 <script is:inline>
-	(() => {
-		function loadVercount() {
-			// 仅在带浏览量占位符的文章页注入，其它页面跳过
-			if (!document.getElementById('vercount_value_page_pv')) return;
-			document.getElementById('vercount-script')?.remove();
-			const s = document.createElement('script');
-			s.id = 'vercount-script';
-			s.src = 'https://events.vercount.one/js';
-			document.body.appendChild(s);
-		}
+  (() => {
+    function loadVercount() {
+      // 仅在带浏览量占位符的文章页注入，其它页面跳过
+      if (!document.getElementById("vercount_value_page_pv")) return;
+      document.getElementById("vercount-script")?.remove();
+      const s = document.createElement("script");
+      s.id = "vercount-script";
+      s.src = "https://events.vercount.one/js";
+      document.body.appendChild(s);
+    }
 
-		if (!window.__vercountReady) {
-			window.__vercountReady = true;
-			document.addEventListener('astro:page-load', loadVercount);
-		}
-	})();
+    if (!window.__vercountReady) {
+      window.__vercountReady = true;
+      document.addEventListener("astro:page-load", loadVercount);
+    }
+  })();
 </script>
 <ClientRouter />
